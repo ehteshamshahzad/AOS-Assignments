@@ -65,7 +65,7 @@ void parentToChild(char *path) // 1
   {
 
     printf("Inside child process\n");
-    close(pipefd[1]);
+    close(pipefd[1]); 
 
     printf("\nContent of file are:\n\n");
     char c = 0;
