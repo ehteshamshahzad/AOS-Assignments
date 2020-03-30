@@ -1,0 +1,9 @@
+Ctrl+Shift+B: Execute program from VS Code terminal
+Ctrl+Shift+I: Format Document
+
+https://code.visualstudio.com/shortcuts/keyboard-shortcuts-linux.pdf
+
+Makefile:   https://www.youtube.com/watch?v=_r7i5X0rXJk&t=403s
+            https://github.com/zappala/pthreads-examples-c/blob/master/Makefile
+
+
