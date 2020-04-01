@@ -9,12 +9,15 @@
 
 using namespace std;
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 void *thread1(void *args)
 {
     pthread_t self_id1 = pthread_self();
     int *num_ptr = (int *)args;
     int num = *num_ptr;
-
+    
+    pthread_mutex_lock(&mutex);
     cout << ">>>starting Thread 1 the Thread ID is: " << self_id1 << "\n";
 
     for (int i = 1; i <= num / 2; i++)
@@ -23,6 +26,7 @@ void *thread1(void *args)
     }
 
     cout << ">>>ending Thread 1, the Thread ID is: " << self_id1 << "\n";
+    pthread_mutex_unlock(&mutex);
     pthread_exit(NULL);
 }
 
@@ -34,6 +38,7 @@ void *thread2(void *args)
     int *num_ptr = (int *)args;
     int num = *num_ptr;
 
+    pthread_mutex_lock(&mutex);
     cout << ">>>starting Thread 2 the Thread ID is: " << self_id2 << "\n";
 
     for (int i = num / 2 + 1; i <= num; i++)
@@ -42,6 +47,7 @@ void *thread2(void *args)
     }
 
     cout << ">>>ending Thread 2, the Thread ID is: " << self_id2 << "\n";
+    pthread_mutex_unlock(&mutex);
     pthread_exit(NULL);
 }
 
@@ -49,9 +55,7 @@ void *thread2(void *args)
 
 int main()
 {
-    cout << "Enter a number between 10-100: ";
-    int input;
-    cin >> input;
+    int input = 0;
 
     while (input < 10 || input > 100)
     {
@@ -60,15 +64,12 @@ int main()
     }
 
     pthread_t tid1;
-    pthread_t tid2;
-
-    printf("Main thread");
-    cout << input;
-
     pthread_create(&tid1, NULL, &thread1, &input);
-    pthread_join(tid1, NULL);
 
+    pthread_t tid2;
     pthread_create(&tid2, NULL, &thread2, &input);
+
+    pthread_join(tid1, NULL);
     pthread_join(tid2, NULL);
 
     return 0;
