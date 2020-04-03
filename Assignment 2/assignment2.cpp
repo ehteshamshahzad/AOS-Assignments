@@ -6,48 +6,59 @@
 
 #include <iostream>
 #include <pthread.h>
+#include <semaphore.h>
 
 using namespace std;
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+// To implement synchronization
+// pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+sem_t semaP;
 
-void *thread1(void *args)
+int input = 0;
+int threadNum = 0;
+
+// Function which the threads will call
+void *threadFunction(void *args)
 {
+    // To get Thread ID
     pthread_t self_id1 = pthread_self();
-    int *num_ptr = (int *)args;
-    int num = *num_ptr;
-    
-    pthread_mutex_lock(&mutex);
-    cout << ">>>starting Thread 1 the Thread ID is: " << self_id1 << "\n";
 
-    for (int i = 1; i <= num / 2; i++)
-    {
-        cout << "Thread 1: " << i << " , the Thread ID is: " << self_id1 << "\n";
-    }
-
-    cout << ">>>ending Thread 1, the Thread ID is: " << self_id1 << "\n";
-    pthread_mutex_unlock(&mutex);
-    pthread_exit(NULL);
-}
-
-//___________________________________________________
-
-void *thread2(void *args)
-{
-    pthread_t self_id2 = pthread_self();
+    // To extract parameter
     int *num_ptr = (int *)args;
     int num = *num_ptr;
 
-    pthread_mutex_lock(&mutex);
-    cout << ">>>starting Thread 2 the Thread ID is: " << self_id2 << "\n";
+    // Locking thread
+    // pthread_mutex_lock(&mutex);
+    sem_wait(&semaP);
 
-    for (int i = num / 2 + 1; i <= num; i++)
+    threadNum++;
+    cout << ">>>starting Thread " << threadNum << " the Thread ID is: " << self_id1 << "\n";
+
+    // Printing first half
+    if (threadNum == 1)
     {
-        cout << "Thread 2: " << i << " , the Thread ID is: " << self_id2 << "\n";
+        for (int i = 1; i <= num / 2; i++)
+        {
+            cout << "Thread " << threadNum << ": " << i << " , the Thread ID is: " << self_id1 << "\n";
+        }
     }
 
-    cout << ">>>ending Thread 2, the Thread ID is: " << self_id2 << "\n";
-    pthread_mutex_unlock(&mutex);
+    // Printing second half
+    else
+    {
+        for (int i = num / 2 + 1; i <= num; i++)
+        {
+            cout << "Thread " << threadNum << ": " << i << " , the Thread ID is: " << self_id1 << "\n";
+        }
+    }
+
+    cout << ">>>ending Thread " << threadNum << ", the Thread ID is: " << self_id1 << "\n";
+
+    // Unlocking thread
+    // pthread_mutex_unlock(&mutex);
+    sem_post(&semaP);
+
+    // Exiting thread
     pthread_exit(NULL);
 }
 
@@ -55,7 +66,8 @@ void *thread2(void *args)
 
 int main()
 {
-    int input = 0;
+    // Initializing semaphore
+    sem_init(&semaP, 0, 1);
 
     while (input < 10 || input > 100)
     {
@@ -63,14 +75,21 @@ int main()
         cin >> input;
     }
 
+    // Creating first thread
     pthread_t tid1;
-    pthread_create(&tid1, NULL, &thread1, &input);
+    pthread_create(&tid1, NULL, &threadFunction, &input);
 
+    // Creating second thread
     pthread_t tid2;
-    pthread_create(&tid2, NULL, &thread2, &input);
+    pthread_create(&tid2, NULL, &threadFunction, &input);
 
+    // Waiting for 1st thread to finish execution
     pthread_join(tid1, NULL);
+    // Waiting for 2nd thread to finish execution
     pthread_join(tid2, NULL);
+
+    // Destroying semaphore
+    sem_destroy(&semaP);
 
     return 0;
 }
